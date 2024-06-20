@@ -1,6 +1,11 @@
 [package]
 name = "frack"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 
-[dependencies]
+license = "MIT"
+description = "A fake Rust error generator."
+authors = ["Kyllingene"]
+
+keywords = ["error", "diagnostic", "rustc"]
+categories = ["command-line-utilities", "command-line-interface"]

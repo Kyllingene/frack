@@ -1,4 +1,4 @@
-//! Utilities for creating `rustc`-like error messages.
+//! Utilities for creating `rustc`-like error messages, for fun or for actual use.
 //!
 //! Note that all implementations of [`Display`](fmt::Display), as well as
 //! methods named `display`, utilize ANSI escape sequences. There's currently no

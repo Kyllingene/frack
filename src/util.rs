@@ -31,12 +31,16 @@
 /// # let tip = "tip";
 /// # let note = "note";
 /// let error = frack::error! {
-///     error_code, message;
-///     path, line, col;
-///     code;
+///     error_code, message; // error[<error_code>]: <message>
+///     path, line, col;     //  --> <path>:<line>:<col> 
+///     code;                //  <line> | <code>
+///                          //            <span> <span_message>
 ///     span /* optional: */ => span_message;
 ///
 ///     // any number of:
+///                          // help: <help_message>
+///                          //  <line> | <suggestion>
+///                          //            <diff> <tip>
 ///     help help_message /* optional: */ => [
 ///         suggestion
 ///         /* optional: */ ; diff
@@ -44,6 +48,7 @@
 ///     ];
 ///
 ///     // any number of:
+///                          // note: <note>
 ///     note note;
 /// };
 /// ```
@@ -138,12 +143,16 @@ macro_rules! error {
 /// # let tip = "tip";
 /// # let note = "note";
 /// let error = frack::warning! {
-///     message;
-///     path, line, col;
-///     code;
+///     message;             // warning: <message>
+///     path, line, col;     //  --> <path>:<line>:<col> 
+///     code;                //  <line> | <code>
+///                          //            <span> <span_message>
 ///     span /* optional: */ => span_message;
 ///
 ///     // any number of:
+///                          // help: <help_message>
+///                          //  <line> | <suggestion>
+///                          //            <diff> <tip>
 ///     help help_message /* optional: */ => [
 ///         suggestion
 ///         /* optional: */ ; diff
@@ -151,6 +160,7 @@ macro_rules! error {
 ///     ];
 ///
 ///     // any number of:
+///                          // note: <note>
 ///     note note;
 /// };
 /// ```
