@@ -1,0 +1,22 @@
+{BOLD}frack{OFF} <command>
+ {BOLD}{BLUE}Commands:{OFF}
+
+   {EMPH}help{OFF}: Show this help message.
+   {EMPH}exapme{OFF}: Show example usage.
+
+   {RED}error{OFF} {BLUE}<errcode> <message> <code> <span>{OFF}: Create an error.
+       {BLUE}errcode{OFF}: The {BOLD}{RED}ERRNO{OFF} in {BOLD}{RED}error[ERRNO]{OFF}{BOLD}: ...{OFF}
+       {BLUE}message{OFF}: The message to display after the error code.
+       {BLUE}code{OFF}:    The code snippet to display in the error.
+       {BLUE}span{OFF}:    The span of the code snippet to underline, e.g. {BLUE}3-15{OFF}.
+
+   {YELLOW}warning {BLUE}<message> <code> <span>{OFF}: Create a warning.
+       {BLUE}message{OFF}: The message to display after {BOLD}{YELLOW}warning{OFF}{BOLD}: ...{OFF}
+       {BLUE}code{OFF}:    The code snippet to display in the warning.
+       {BLUE}span{OFF}:    The span of the code snippet to underline, e.g. {BLUE}3-15{OFF}.
+
+{BOLD}{BLUE} Shared post-commands:{OFF}
+     {BOLD}note{OFF} {BLUE}<message>{OFF}: A note to display after the body.
+     {BOLD}{YELLOW}help{OFF} {BLUE}<message>{OFF}: A help message to display after the body.
+      {BOLD}{GREEN}fix{OFF} {BLUE}<message> <code> <span> [span <note>]{OFF}: A suggestion to fix the code sample.
+                                        {BLUE}<note>{OFF}   gets placed after the underline.

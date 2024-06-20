@@ -22,7 +22,30 @@ fn main() {
 
     match command.as_str() {
         "help" => {
-            todo!("add help message");
+            let help = include_str!("help.txt")
+                .replace("{OFF}", "\x1b[0m")
+                .replace("{BOLD}", "\x1b[1m")
+                .replace("{EMPH}", "\x1b[4m")
+                .replace("{RED}", "\x1b[38;5;9m")
+                .replace("{GREEN}", "\x1b[38;5;2m")
+                .replace("{YELLOW}", "\x1b[38;5;3m")
+                .replace("{BLUE}", "\x1b[38;5;12m");
+
+            println!("{help}");
+        }
+
+        "example" => {
+            let example = include_str!("example.txt")
+                .replace("{OFF}", "\x1b[0m")
+                .replace("{BOLD}", "\x1b[1m")
+                .replace("{EMPH}", "\x1b[4m")
+                .replace("{RED}", "\x1b[38;5;1m")
+                .replace("{YELLOW}", "\x1b[38;5;3m")
+                .replace("{GREY}", "\x1b[38;5;8m")
+                .replace("{LIME}", "\x1b[38;5;10m")
+                .replace("{BLUE}", "\x1b[38;5;12m");
+
+            println!("{example}");
         }
 
         "error" => {
@@ -40,7 +63,7 @@ fn main() {
                 "arg", 1, 1;
                 other;
                 0..=end => "unrecognized command";
-                help "valid commands are `help`, `error`, `warning`";
+                help "valid commands are `help`, `example`, `error`, `warning`";
                 help "try `frack help` for usage";
             };
 
