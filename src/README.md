@@ -4,6 +4,8 @@ Fake Rust error generator - both CLI and as a lib!
 
 ## CLI
 
+Use `frack help`.
+
 Command for the image:
 
 ```bash

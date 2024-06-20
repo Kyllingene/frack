@@ -5,7 +5,7 @@ fn main() {
         code: "    let Foo { x } = z;".to_string(),
         line_number: 8,
         marker: Some(Marker {
-            range: 9..=18,
+            range: 8..=16,
             symbol: '^',
             color: 9,
             message: Some("what'd field `y` ever do to you?".to_string()),
@@ -17,7 +17,7 @@ fn main() {
         code: "    let Foo { x, y } = z;".to_string(),
         line_number: 8,
         marker: Some(Marker {
-            range: 16..=19,
+            range: 15..=17,
             symbol: '~',
             color: 10,
             message: None,
