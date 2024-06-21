@@ -285,17 +285,17 @@ fn fix(args: &mut Peekable<impl Iterator<Item = String>>, major: usize) -> Help 
 
     Help {
         message,
-        suggestion: Some(Code {
+        suggestion: Some(Code::single(
             code,
-            line_number: 7,
-            marker: Some(Marker {
+            7,
+            Some(Marker {
                 range: start..=end,
                 symbol: '~',
                 color: 2,
                 message: marker_message,
                 color_span: true,
             }),
-        }),
+        )),
     }
 }
 

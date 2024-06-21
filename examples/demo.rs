@@ -1,29 +1,29 @@
 use frack::{Code, Error, File, Help, Marker, Note};
 
 fn main() {
-    let code = Code {
-        code: "    let Foo { x } = z;".to_string(),
-        line_number: 8,
-        marker: Some(Marker {
+    let code = Code::single(
+        "    let Foo { x } = z;".to_string(),
+        8,
+        Some(Marker {
             range: 8..=16,
             symbol: '^',
             color: 9,
             message: Some("what'd field `y` ever do to you?".to_string()),
             color_span: false,
         }),
-    };
+    );
 
-    let fix = Code {
-        code: "    let Foo { x, y } = z;".to_string(),
-        line_number: 8,
-        marker: Some(Marker {
+    let fix = Code::single(
+        "    let Foo { x, y } = z;".to_string(),
+        8,
+        Some(Marker {
             range: 15..=17,
             symbol: '~',
             color: 10,
             message: None,
             color_span: true,
         }),
-    };
+    );
 
     let error = Error {
         error_code: "AMOGUS".to_string(),

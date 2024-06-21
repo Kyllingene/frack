@@ -5,7 +5,7 @@
 //! way to change this.
 
 use std::fmt;
-use std::ops::RangeInclusive;
+use std::ops::{Deref, DerefMut, RangeInclusive};
 
 mod util;
 
@@ -51,7 +51,8 @@ impl fmt::Display for Error {
         normal(f)?;
         writeln!(f, "{}:{}:{}", self.file.path, self.file.line, self.file.col)?;
 
-        self.code.display(true, f)?;
+        let last = self.helps.is_empty() && self.notes.is_empty();
+        self.code.display(!last, f)?;
 
         for help in &self.helps {
             help.display(false, f)?;
@@ -104,7 +105,8 @@ impl fmt::Display for Warning {
         normal(f)?;
         writeln!(f, "{}:{}:{}", self.file.path, self.file.line, self.file.col)?;
 
-        self.code.display(true, f)?;
+        let last = self.helps.is_empty() && self.notes.is_empty();
+        self.code.display(!last, f)?;
 
         for help in &self.helps {
             help.display(false, f)?;
@@ -129,7 +131,95 @@ impl fmt::Display for Warning {
 }
 
 /// A code block for a [`Help`], [`Warning`], or [`Error`].
-pub struct Code {
+///
+/// If two subesquent [`Line`]s of code aren't adjacent, prints ellipses between them.
+pub struct Code(pub Vec<Line>);
+
+impl Deref for Code {
+    type Target = Vec<Line>;
+
+    fn deref(&self) -> &Vec<Line> {
+        &self.0
+    }
+}
+
+impl DerefMut for Code {
+    fn deref_mut(&mut self) -> &mut Vec<Line> {
+        &mut self.0
+    }
+}
+
+impl Code {
+    /// Create a code block with a single line of code.
+    ///
+    /// Shortcut for <code>Code(vec![Line {
+    ///     code: code.to_string(),
+    ///     line_number,
+    ///     marker,
+    /// }])</code>.
+    pub fn single(code: impl ToString, line_number: usize, marker: Option<Marker>) -> Self {
+        Self(vec![Line {
+            code: code.to_string(),
+            line_number,
+            marker,
+        }])
+    }
+
+    /// Returns the maximum width of the line numbers of this code block.
+    pub fn line_number_width(&self) -> usize {
+        self.0
+            .iter()
+            .map(|l| width(l.line_number))
+            .max()
+            .unwrap_or(1)
+    }
+
+    /// Whether or not the last line has a [`Marker`].
+    pub fn end_marker(&self) -> bool {
+        self.0.last().is_some_and(|l| l.marker.is_some())
+    }
+
+    /// Write out with ANSI escape codes. Behaves like an impl for
+    /// [`Display`](fmt::Display).
+    ///
+    /// If `extend == false` and this code has a [marker](Marker), prints out an
+    /// extra line; to mimic `rustc`, `extend` should be true if it's the main
+    /// code block for the warning/error and there are no helps/notes, or the
+    /// code block has no marker.
+    pub fn display(&self, extend: bool, f: &mut fmt::Formatter) -> fmt::Result {
+        let lno_width = self.line_number_width();
+
+        bold(f)?;
+        color(12, f)?;
+        writeln!(f, "{: >width$}", " |", width = lno_width + 2)?;
+        normal(f)?;
+
+        let mut last = None;
+        for line in &self.0 {
+            if last.is_some_and(|l| line.line_number - 1 != l) {
+                bold(f)?;
+                color(12, f)?;
+                writeln!(f, "...")?;
+                normal(f)?;
+            }
+            last = Some(line.line_number);
+
+            line.display(lno_width, f)?;
+        }
+
+        if extend || !self.end_marker() {
+            bold(f)?;
+            color(12, f)?;
+            writeln!(f, "{: >width$}", " |", width = lno_width + 2)?;
+            normal(f)?;
+        }
+
+        Ok(())
+    }
+}
+
+/// A single line in a [`Code`] block.
+pub struct Line {
     /// A single line of code.
     ///
     /// If this is multiple lines, the output *will* be degraded.
@@ -142,30 +232,14 @@ pub struct Code {
     pub marker: Option<Marker>,
 }
 
-impl Code {
-    /// Returns the number of digits in the line number of the code.
-    pub fn line_number_width(&self) -> usize {
-        width(self.line_number)
-    }
-
+impl Line {
     /// Write out with ANSI escape codes. Behaves like an impl for
     /// [`Display`](fmt::Display).
-    ///
-    /// If `extend == false` and this code has a [marker](Marker), prints out an
-    /// extra line; to mimic `rustc`, `extend` should be true iff it's the main
-    /// code block for the warning/error.
-    pub fn display(&self, extend: bool, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let width = self.line_number_width();
-
-        bold(f)?;
-        color(12, f)?;
-        writeln!(f, "{: >width$}", " |", width = width + 2)?;
-        normal(f)?;
-
+    pub fn display(&self, lno_width: usize, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut line = || {
             bold(f)?;
             color(12, f)?;
-            write!(f, "{: <width$} | ", self.line_number, width = width)?;
+            write!(f, "{: <width$} | ", self.line_number, width = lno_width)?;
             normal(f)?;
             writeln!(f, "{}", self.code)?;
 
@@ -176,7 +250,7 @@ impl Code {
             if m.color_span && *m.range.end() <= self.code.len() {
                 bold(f)?;
                 color(12, f)?;
-                write!(f, "{: <width$} | ", self.line_number, width = width)?;
+                write!(f, "{: <width$} | ", self.line_number, width = lno_width)?;
                 normal(f)?;
 
                 let (start, rest) = self.code.split_at(*m.range.start());
@@ -195,15 +269,11 @@ impl Code {
 
             bold(f)?;
             color(12, f)?;
-            write!(f, "{: >width$}", " | ", width = width + 3)?;
+            write!(f, "{: >width$}", " | ", width = lno_width + 3)?;
             normal(f)?;
             write!(f, "{m}")?;
         } else {
             line()?;
-        }
-
-        if extend || self.marker.is_none() {
-            writeln!(f, "{: >width$}", " |", width = width + 2)?;
         }
 
         Ok(())
@@ -223,8 +293,9 @@ impl Help {
     /// [`Display`](fmt::Display).
     ///
     /// If `extend == false` and this code has a [marker](Marker), prints out an
-    /// extra line; to mimic `rustc`, `extend` should be true iff it's the main
-    /// code block for the warning/error.
+    /// extra line; to mimic `rustc`, `extend` should be true if it's the main
+    /// code block for the warning/error and there are no helps/notes, or the
+    /// code block has no marker.
     pub fn display(&self, extend: bool, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         bold(f)?;
         color(14, f)?;
@@ -243,6 +314,20 @@ impl Help {
 
 /// A note for a [`Warning`] or [`Error`].
 pub struct Note(pub String);
+
+impl Deref for Note {
+    type Target = String;
+
+    fn deref(&self) -> &String {
+        &self.0
+    }
+}
+
+impl DerefMut for Note {
+    fn deref_mut(&mut self) -> &mut String {
+        &mut self.0
+    }
+}
 
 impl fmt::Display for Note {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

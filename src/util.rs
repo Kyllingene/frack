@@ -32,7 +32,7 @@
 /// # let note = "note";
 /// let error = frack::error! {
 ///     error_code, message; // error[<error_code>]: <message>
-///     path, line, col;     //  --> <path>:<line>:<col> 
+///     path, line, col;     //  --> <path>:<line>:<col>
 ///     code;                //  <line> | <code>
 ///                          //            <span> <span_message>
 ///     span /* optional: */ => span_message;
@@ -74,32 +74,30 @@ macro_rules! error {
                 line: $line,
                 col: $col,
             },
-
-            code: $crate::Code {
-                code: $code.into(),
-                line_number: $line,
-                marker: Some($crate::Marker {
+            code: $crate::Code::single(
+                $code, $line,
+                Some($crate::Marker {
                     range: $span,
                     symbol: '^',
                     color: 9,
                     message: $crate::if_else!([$( Some($span_message.into()) )?][None]),
                     color_span: false,
                 }),
-            },
+            ),
             helps: ::std::vec![$(
                 $crate::Help {
                     message: $help.into(),
-                    suggestion: $crate::if_else!([$(Some($crate::Code {
-                        code: $suggestion.into(),
-                        line_number: $line,
-                        marker: $crate::if_else!([$(Some($crate::Marker {
+                    suggestion: $crate::if_else!([$(Some($crate::Code::single(
+                        $suggestion,
+                        $line,
+                        $crate::if_else!([$(Some($crate::Marker {
                             range: $diff,
                             symbol: '~',
                             color: 10,
                             message: $crate::if_else!([$( Some($tip.into()) )?][None]),
                             color_span: true,
                         }))?][None]),
-                    }))?][None]),
+                    )))?][None]),
                 },
            )*],
             notes: ::std::vec![$( $crate::Note($note.into()), )*],
@@ -144,7 +142,7 @@ macro_rules! error {
 /// # let note = "note";
 /// let error = frack::warning! {
 ///     message;             // warning: <message>
-///     path, line, col;     //  --> <path>:<line>:<col> 
+///     path, line, col;     //  --> <path>:<line>:<col>
 ///     code;                //  <line> | <code>
 ///                          //            <span> <span_message>
 ///     span /* optional: */ => span_message;
@@ -185,32 +183,30 @@ macro_rules! warning {
                 line: $line,
                 col: $col,
             },
-
-            code: $crate::Code {
-                code: $code.into(),
-                line_number: $line,
-                marker: Some($crate::Marker {
+            code: $crate::Code::single(
+                $code, $line,
+                Some($crate::Marker {
                     range: $span,
                     symbol: '^',
-                    color: 3,
+                    color: 9,
                     message: $crate::if_else!([$( Some($span_message.into()) )?][None]),
                     color_span: false,
                 }),
-            },
+            ),
             helps: ::std::vec![$(
                 $crate::Help {
                     message: $help.into(),
-                    suggestion: $crate::if_else!([$(Some($crate::Code {
-                        code: $suggestion.into(),
-                        line_number: $line,
-                        marker: $crate::if_else!([$(Some($crate::Marker {
+                    suggestion: $crate::if_else!([$(Some($crate::Code::single(
+                        $suggestion,
+                        $line,
+                        $crate::if_else!([$(Some($crate::Marker {
                             range: $diff,
                             symbol: '~',
                             color: 10,
                             message: $crate::if_else!([$( Some($tip.into()) )?][None]),
                             color_span: true,
                         }))?][None]),
-                    }))?][None]),
+                    )))?][None]),
                 },
            )*],
             notes: ::std::vec![$( $crate::Note($note.into()), )*],
